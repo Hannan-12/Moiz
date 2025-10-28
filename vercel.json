@@ -1,37 +1,37 @@
-// vercel.json
+
 {
   "version": 2,
   "builds": [
     {
-      "src": "server.js",        // Your main Express file
-      "use": "@vercel/node"     // Use the Node.js runtime
+      "src": "server.js",        
+      "use": "@vercel/node"    
     },
     {
-      "src": "public/**",       // Files in the public directory
-      "use": "@vercel/static"   // Serve them as static assets
+      "src": "public/**",      
+      "use": "@vercel/static"  
     }
   ],
   "rewrites": [
-    // Route API calls to the serverless function
+
     {
       "source": "/api/(.*)",
       "destination": "/server.js"
     },
-    // Serve HTML files directly (without needing .html extension in URL)
+
      {
       "source": "/beneficiary-form",
       "destination": "/public/beneficiary-form.html"
     },
      {
-      "source": "/sendpay", // Optional clean URL for sendpay
+      "source": "/sendpay", 
       "destination": "/public/sendpay.html"
     },
-    // Route the root path to sendpay.html
+
     {
       "source": "/",
       "destination": "/public/sendpay.html"
     },
-    // Optional: Keep old paths working if needed
+
     {
       "source": "/beneficiary-form.html",
       "destination": "/public/beneficiary-form.html"
@@ -41,10 +41,10 @@
       "destination": "/public/sendpay.html"
     },
      {
-      "source": "/sendpayapi", // Handle old path
+      "source": "/sendpayapi", 
       "destination": "/public/sendpay.html"
      },
-     // Fallback for any other static file requests in public
+
      {
        "source": "/(.*)",
        "destination": "/public/$1"
