@@ -1,53 +1,31 @@
-
 {
   "version": 2,
   "builds": [
     {
-      "src": "server.js",        
-      "use": "@vercel/node"    
+      "src": "server.js",
+      "use": "@vercel/node"
     },
     {
-      "src": "public/**",      
-      "use": "@vercel/static"  
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
-
     {
       "source": "/api/(.*)",
       "destination": "/server.js"
     },
-
-     {
+    {
       "source": "/beneficiary-form",
       "destination": "/public/beneficiary-form.html"
     },
-     {
-      "source": "/sendpay", 
+    {
+      "source": "/sendpay",
       "destination": "/public/sendpay.html"
     },
-
     {
       "source": "/",
       "destination": "/public/sendpay.html"
-    },
-
-    {
-      "source": "/beneficiary-form.html",
-      "destination": "/public/beneficiary-form.html"
-    },
-    {
-      "source": "/sendpay.html",
-      "destination": "/public/sendpay.html"
-    },
-     {
-      "source": "/sendpayapi", 
-      "destination": "/public/sendpay.html"
-     },
-
-     {
-       "source": "/(.*)",
-       "destination": "/public/$1"
-     }
+    }
   ]
 }
