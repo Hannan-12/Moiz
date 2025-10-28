@@ -102,106 +102,115 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const currencySelect = document.getElementById('currency');
-            const paymentForm = document.getElementById('paymentForm');
-            const submitButton = document.getElementById('submitButton');
-            const loader = document.getElementById('loader');
-            const errorMessage = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
+   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const currencySelect = document.getElementById('currency');
+        const paymentForm = document.getElementById('paymentForm');
+        const submitButton = document.getElementById('submitButton');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
 
-            async function fetchCurrencies() {
-                try {
-                    const apiUrl = 'https://api.nowpayments.io/v1/currencies';
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-                    const response = await fetch(proxyUrl);
+        async function fetchCurrencies() {
+            try {
+                // ✅ Changed: Fetch from your own backend API endpoint
+                const response = await fetch('/api/currencies'); // Relative path
 
-                    if (!response.ok) {
-                        const errorData = await response.text();
-                        console.error("Proxy Response Error:", errorData);
-                        throw new Error(`Failed to load currencies. Status: ${response.status}`);
-                    }
+                if (!response.ok) {
+                    const errorData = await response.json(); // Try parsing error from API
+                    console.error("API Response Error:", errorData);
+                    throw new Error(errorData.message || `Failed to load currencies. Status: ${response.status}`);
+                }
 
-                    const data = await response.json();
-                    currencySelect.innerHTML = '<option value="" disabled selected>Select a currency</option>';
-                    data.currencies.forEach(currency => {
+                const data = await response.json();
+                currencySelect.innerHTML = '<option value="" disabled selected>Select a currency</option>';
+
+                // Ensure 'data.currencies' exists and is an array
+                if (data && Array.isArray(data.currencies)) {
+                     data.currencies.forEach(currency => {
                         const option = document.createElement('option');
                         option.value = currency;
                         option.textContent = currency.toUpperCase();
                         currencySelect.appendChild(option);
                     });
-                } catch (error) {
-                    console.error('Error fetching currencies:', error);
-                    currencySelect.innerHTML = '<option value="" disabled selected>Failed to load currencies</option>';
-                    showError('Could not load cryptocurrency list. Please try refreshing the page.');
+                } else {
+                     console.error('Unexpected data format from /api/currencies:', data);
+                     throw new Error('Unexpected data format for currencies.');
                 }
+            } catch (error) {
+                console.error('Error fetching currencies:', error);
+                currencySelect.innerHTML = '<option value="" disabled selected>Failed to load currencies</option>';
+                showError(error.message || 'Could not load cryptocurrency list. Please try refreshing the page.');
+            }
+        }
+
+        paymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+            loader.classList.remove('hidden');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+
+            const amount = document.getElementById('amount').value;
+            const currency = currencySelect.value;
+
+            if (!amount || !currency) {
+                showError('Please enter an amount and select a currency.');
+                resetButton();
+                return;
             }
 
-            paymentForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); 
-                hideError();
-                loader.classList.remove('hidden');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Processing...';
+            try {
+                // ✅ Changed: Use relative path for API endpoint
+                const serverUrl = '/api/create-payment'; // Relative path
+                const response = await fetch(serverUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        price_amount: parseFloat(amount),
+                        pay_currency: currency
+                    })
+                });
 
-                const amount = document.getElementById('amount').value;
-                const currency = currencySelect.value;
+                const data = await response.json();
 
-                if (!amount || !currency) {
-                    showError('Please enter an amount and select a currency.');
-                    resetButton();
-                    return;
+                if (!response.ok) {
+                    // Use the message from the backend's JSON response
+                    throw new Error(data.message || 'Failed to create payment.');
                 }
 
-                try {
-                    const serverUrl = 'http://localhost:3000/api/create-payment';
-                    const response = await fetch(serverUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            price_amount: parseFloat(amount),
-                            pay_currency: currency
-                        })
-                    });
+                // Redirect to NOWPayments invoice URL
+                window.location.href = data.invoiceUrl;
 
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Failed to create payment.');
-                    }
-
-                    window.location.href = data.invoiceUrl;
-                } catch (error) {
-                    console.error('Form submission error:', error);
-                    showError(error.message);
-                    resetButton();
-                }
-            });
-
-            function showError(message) {
-                errorText.textContent = message;
-                errorMessage.classList.remove('hidden');
-                errorMessage.classList.add('shake-error');
-                setTimeout(() => {
-                    errorMessage.classList.remove('shake-error');
-                }, 300);
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showError(error.message || 'An unknown error occurred while creating the payment.');
+                resetButton(); // Only reset if redirect doesn't happen
             }
-
-            function hideError() {
-                errorMessage.classList.add('hidden');
-            }
-
-            function resetButton() {
-                loader.classList.add('hidden');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Proceed to Payment';
-            }
-
-            fetchCurrencies();
         });
-    </script>
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            // Optional: Add shake animation class
+            errorMessage.classList.add('shake-error');
+            setTimeout(() => errorMessage.classList.remove('shake-error'), 300);
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+            errorText.textContent = '';
+        }
+
+        function resetButton() {
+            loader.classList.add('hidden');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Proceed to Payment';
+        }
+
+        // Fetch currencies when the page loads
+        fetchCurrencies();
+    });
+</script>
 </body>
 </html>
