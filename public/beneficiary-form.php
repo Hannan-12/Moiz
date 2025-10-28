@@ -71,7 +71,7 @@
             <p class="mt-2 text-gray-600">Payment successful. Please complete the form below.</p>
         </div>
 
-        <form id="beneficiaryForm" action="/api/submit-details" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form id="beneficiaryForm" action="/api/submit-details.php" method="POST" enctype="multipart/form-data" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name (as on ID)</label>

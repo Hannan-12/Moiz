@@ -113,8 +113,8 @@
 
         async function fetchCurrencies() {
             try {
-                // ✅ Changed: Fetch from your own backend API endpoint
-                const response = await fetch('/api/currencies'); // Relative path
+                // ✅ Changed: Path points to the new PHP API file
+                const response = await fetch('/api/currencies.php'); // Relative path
 
                 if (!response.ok) {
                     const errorData = await response.json(); // Try parsing error from API
@@ -134,7 +134,7 @@
                         currencySelect.appendChild(option);
                     });
                 } else {
-                     console.error('Unexpected data format from /api/currencies:', data);
+                     console.error('Unexpected data format from /api/currencies.php:', data);
                      throw new Error('Unexpected data format for currencies.');
                 }
             } catch (error) {
@@ -161,8 +161,8 @@
             }
 
             try {
-                // ✅ Changed: Use relative path for API endpoint
-                const serverUrl = '/api/create-payment'; // Relative path
+                // ✅ Changed: Path points to the new PHP API file
+                const serverUrl = '/api/create-payment.php'; // Relative path
                 const response = await fetch(serverUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
